@@ -1,13 +1,38 @@
 // src/models/Contract.js
-const mongoose = require('mongoose');
+const db = require('../config/db');
 
-const contractSchema = new mongoose.Schema({
-  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  details: { type: String, required: true },
-  start_date: { type: Date, required: true },
-  end_date: { type: Date, required: true },
-  created_at: { type: Date, default: Date.now },
-  updated_at: { type: Date, default: Date.now }
-});
+const Contract = {
+  async create(data) {
+    const connection = await db();
+    const [result] = await connection.execute('INSERT INTO contracts (userId, details) VALUES (?, ?)', 
+      [data.userId, data.details]);
+    return result;
+  },
 
-module.exports = mongoose.model('Contract', contractSchema);
+  async getAll() {
+    const connection = await db();
+    const [rows] = await connection.execute('SELECT * FROM contracts');
+    return rows;
+  },
+
+  async getById(id) {
+    const connection = await db();
+    const [rows] = await connection.execute('SELECT * FROM contracts WHERE id = ?', [id]);
+    return rows[0];
+  },
+
+  async update(id, data) {
+    const connection = await db();
+    const [result] = await connection.execute('UPDATE contracts SET userId = ?, details = ? WHERE id = ?', 
+      [data.userId, data.details, id]);
+    return result;
+  },
+
+  async delete(id) {
+    const connection = await db();
+    const [result] = await connection.execute('DELETE FROM contracts WHERE id = ?', [id]);
+    return result;
+  }
+};
+
+module.exports = Contract;

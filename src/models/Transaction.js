@@ -1,11 +1,38 @@
 // src/models/Transaction.js
-const mongoose = require('mongoose');
+const db = require('../config/db');
 
-const transactionSchema = new mongoose.Schema({
-  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  amount: { type: Number, required: true },
-  transaction_type: { type: String, enum: ['credit', 'debit'], required: true },
-  created_at: { type: Date, default: Date.now }
-});
+const Transaction = {
+  async create(data) {
+    const connection = await db();
+    const [result] = await connection.execute('INSERT INTO transactions (amount, senderId, receiverId) VALUES (?, ?, ?)', 
+      [data.amount, data.senderId, data.receiverId]);
+    return result;
+  },
 
-module.exports = mongoose.model('Transaction', transactionSchema);
+  async getAll() {
+    const connection = await db();
+    const [rows] = await connection.execute('SELECT * FROM transactions');
+    return rows;
+  },
+
+  async getById(id) {
+    const connection = await db();
+    const [rows] = await connection.execute('SELECT * FROM transactions WHERE id = ?', [id]);
+    return rows[0];
+  },
+
+  async update(id, data) {
+    const connection = await db();
+    const [result] = await connection.execute('UPDATE transactions SET amount = ?, senderId = ?, receiverId = ? WHERE id = ?', 
+      [data.amount, data.senderId, data.receiverId, id]);
+    return result;
+  },
+
+  async delete(id) {
+    const connection = await db();
+    const [result] = await connection.execute('DELETE FROM transactions WHERE id = ?', [id]);
+    return result;
+  }
+};
+
+module.exports = Transaction;

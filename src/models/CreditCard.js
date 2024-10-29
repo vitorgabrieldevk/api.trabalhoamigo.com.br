@@ -1,14 +1,38 @@
 // src/models/CreditCard.js
-const mongoose = require('mongoose');
+const db = require('../config/db');
 
-const creditCardSchema = new mongoose.Schema({
-  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  card_number: { type: String, required: true },
-  cardholder_name: { type: String, required: true },
-  expiration_date: { type: String, required: true },
-  cvv: { type: String, required: true },
-  created_at: { type: Date, default: Date.now },
-  updated_at: { type: Date, default: Date.now }
-});
+const CreditCard = {
+  async create(data) {
+    const connection = await db();
+    const [result] = await connection.execute('INSERT INTO credit_cards (userId, cardNumber, expiryDate) VALUES (?, ?, ?)', 
+      [data.userId, data.cardNumber, data.expiryDate]);
+    return result;
+  },
 
-module.exports = mongoose.model('CreditCard', creditCardSchema);
+  async getAll() {
+    const connection = await db();
+    const [rows] = await connection.execute('SELECT * FROM credit_cards');
+    return rows;
+  },
+
+  async getById(id) {
+    const connection = await db();
+    const [rows] = await connection.execute('SELECT * FROM credit_cards WHERE id = ?', [id]);
+    return rows[0];
+  },
+
+  async update(id, data) {
+    const connection = await db();
+    const [result] = await connection.execute('UPDATE credit_cards SET userId = ?, cardNumber = ?, expiryDate = ? WHERE id = ?', 
+      [data.userId, data.cardNumber, data.expiryDate, id]);
+    return result;
+  },
+
+  async delete(id) {
+    const connection = await db();
+    const [result] = await connection.execute('DELETE FROM credit_cards WHERE id = ?', [id]);
+    return result;
+  }
+};
+
+module.exports = CreditCard;

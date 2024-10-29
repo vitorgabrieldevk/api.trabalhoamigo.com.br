@@ -1,18 +1,38 @@
 // src/models/Address.js
-const mongoose = require('mongoose');
+const db = require('../config/db');
 
-const addressSchema = new mongoose.Schema({
-  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  street: { type: String, required: true },
-  number: { type: String, required: true },
-  complement: { type: String },
-  neighborhood: { type: String, required: true },
-  city: { type: String, required: true },
-  state: { type: String, required: true },
-  country: { type: String, required: true },
-  zip_code: { type: String, required: true },
-  created_at: { type: Date, default: Date.now },
-  updated_at: { type: Date, default: Date.now }
-});
+const Address = {
+  async create(data) {
+    const connection = await db();
+    const [result] = await connection.execute('INSERT INTO addresses (street, city, state, zip) VALUES (?, ?, ?, ?)', 
+      [data.street, data.city, data.state, data.zip]);
+    return result;
+  },
 
-module.exports = mongoose.model('Address', addressSchema);
+  async getAll() {
+    const connection = await db();
+    const [rows] = await connection.execute('SELECT * FROM addresses');
+    return rows;
+  },
+
+  async getById(id) {
+    const connection = await db();
+    const [rows] = await connection.execute('SELECT * FROM addresses WHERE id = ?', [id]);
+    return rows[0];
+  },
+
+  async update(id, data) {
+    const connection = await db();
+    const [result] = await connection.execute('UPDATE addresses SET street = ?, city = ?, state = ?, zip = ? WHERE id = ?', 
+      [data.street, data.city, data.state, data.zip, id]);
+    return result;
+  },
+
+  async delete(id) {
+    const connection = await db();
+    const [result] = await connection.execute('DELETE FROM addresses WHERE id = ?', [id]);
+    return result;
+  }
+};
+
+module.exports = Address;

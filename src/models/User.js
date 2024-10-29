@@ -1,23 +1,38 @@
 // src/models/User.js
-const mongoose = require('mongoose');
+const db = require('../config/db');
 
-const userSchema = new mongoose.Schema({
-  first_name: { type: String, required: true },
-  last_name: { type: String },
-  mobile: { type: String },
-  whatsapp: { type: String },
-  phone: { type: String },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  totp_secret: { type: String, required: true },
-  totp_enabled: { type: Boolean, default: false },
-  cpf: { type: String },
-  created_at: { type: Date, default: Date.now },
-  user_type: { type: String, enum: ['admin', 'contractor', 'advertiser'], required: true },
-  unique_id: { type: String, required: true, unique: true },
-  profile_image: { type: String },
-  is_active: { type: Boolean, default: true },
-  deleted_at: { type: Date }
-});
+const User = {
+  async create(data) {
+    const connection = await db();
+    const [result] = await connection.execute('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', 
+      [data.name, data.email, data.password]);
+    return result;
+  },
 
-module.exports = mongoose.model('User', userSchema);
+  async getAll() {
+    const connection = await db();
+    const [rows] = await connection.execute('SELECT * FROM users');
+    return rows;
+  },
+
+  async getById(id) {
+    const connection = await db();
+    const [rows] = await connection.execute('SELECT * FROM users WHERE id = ?', [id]);
+    return rows[0];
+  },
+
+  async update(id, data) {
+    const connection = await db();
+    const [result] = await connection.execute('UPDATE users SET name = ?, email = ?, password = ? WHERE id = ?', 
+      [data.name, data.email, data.password, id]);
+    return result;
+  },
+
+  async delete(id) {
+    const connection = await db();
+    const [result] = await connection.execute('DELETE FROM users WHERE id = ?', [id]);
+    return result;
+  }
+};
+
+module.exports = User;

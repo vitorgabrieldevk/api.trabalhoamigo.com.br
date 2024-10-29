@@ -1,11 +1,38 @@
 // src/models/Message.js
-const mongoose = require('mongoose');
+const db = require('../config/db');
 
-const messageSchema = new mongoose.Schema({
-  sender_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  receiver_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  content: { type: String, required: true },
-  created_at: { type: Date, default: Date.now }
-});
+const Message = {
+  async create(data) {
+    const connection = await db();
+    const [result] = await connection.execute('INSERT INTO messages (userId, content) VALUES (?, ?)', 
+      [data.userId, data.content]);
+    return result;
+  },
 
-module.exports = mongoose.model('Message', messageSchema);
+  async getAll() {
+    const connection = await db();
+    const [rows] = await connection.execute('SELECT * FROM messages');
+    return rows;
+  },
+
+  async getById(id) {
+    const connection = await db();
+    const [rows] = await connection.execute('SELECT * FROM messages WHERE id = ?', [id]);
+    return rows[0];
+  },
+
+  async update(id, data) {
+    const connection = await db();
+    const [result] = await connection.execute('UPDATE messages SET userId = ?, content = ? WHERE id = ?', 
+      [data.userId, data.content, id]);
+    return result;
+  },
+
+  async delete(id) {
+    const connection = await db();
+    const [result] = await connection.execute('DELETE FROM messages WHERE id = ?', [id]);
+    return result;
+  }
+};
+
+module.exports = Message;

@@ -1,11 +1,36 @@
 // src/models/Category.js
-const mongoose = require('mongoose');
+const db = require('../config/db');
 
-const categorySchema = new mongoose.Schema({
-  name: { type: String, required: true, unique: true },
-  description: { type: String },
-  created_at: { type: Date, default: Date.now },
-  updated_at: { type: Date, default: Date.now }
-});
+const Category = {
+  async create(data) {
+    const connection = await db();
+    const [result] = await connection.execute('INSERT INTO categories (name) VALUES (?)', [data.name]);
+    return result;
+  },
 
-module.exports = mongoose.model('Category', categorySchema);
+  async getAll() {
+    const connection = await db();
+    const [rows] = await connection.execute('SELECT * FROM categories');
+    return rows;
+  },
+
+  async getById(id) {
+    const connection = await db();
+    const [rows] = await connection.execute('SELECT * FROM categories WHERE id = ?', [id]);
+    return rows[0];
+  },
+
+  async update(id, data) {
+    const connection = await db();
+    const [result] = await connection.execute('UPDATE categories SET name = ? WHERE id = ?', [data.name, id]);
+    return result;
+  },
+
+  async delete(id) {
+    const connection = await db();
+    const [result] = await connection.execute('DELETE FROM categories WHERE id = ?', [id]);
+    return result;
+  }
+};
+
+module.exports = Category;
